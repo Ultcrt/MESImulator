@@ -2,11 +2,12 @@
 
 #include "Instruction.h"
 #include "Bus.h"
+#include "Cache.h"
 
 class Core
 {
 public:
-	Core(Cache* cache);
+	Core(Cache* pCache);
 	bool Execute(Instruction instruction);
 
 private:

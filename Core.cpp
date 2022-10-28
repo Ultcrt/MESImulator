@@ -1,14 +1,7 @@
 #include "Core.h"
 
-Core::Core(Cache* pointer) : pCache(pointer) {}
+Core::Core(Cache* pCache) : pCache(pCache) {}
 
-bool Core::Execute(Instruction instruction)
-{
-	switch (instruction.operation)
-	{
-	Instruction::M:
-		break;
-	}
-	return false;
+bool Core::Execute(Instruction instruction) {
+	return pCache->ReceiveLocalInstruction(instruction);
 }
-;

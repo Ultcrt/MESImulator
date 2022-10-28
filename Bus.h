@@ -1,16 +1,23 @@
 #pragma once
 
 #include "Cache.h"
+#include "Instruction.h"
+#include "Memory.h"
 #include <string>
 #include <vector>
 
 class Bus
 {
 public:
-	bool LinkCache(Cache cache);
-	size_t Broadcast(Cache src, std::string address);
+	bool PushBackCachePtr(Cache* pCache);
+	bool SetMemoryPtr(Memory* pMemory);
+	bool Link(Cache* pCache);
+	bool Link(Memory* pMemory);
+	size_t Broadcast(Cache* src, Instruction instruction);
+	bool WriteBackToMemory(size_t startAddress);
 
 private:
-	std::vector<Core> cores;
+	std::vector<Cache*> pCaches;
+	Memory* pMemory;
 };
 
