@@ -8,7 +8,7 @@ class Core
 {
 public:
 	Core(Cache* pCache);
-	bool Execute(Instruction instruction);
+	bool Execute(Instruction localInstruction);
 
 private:
 	Cache* pCache;

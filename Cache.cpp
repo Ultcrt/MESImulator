@@ -2,8 +2,8 @@
 
 Cache::Cache(size_t cacheLineLen, size_t maxCacheLine, Bus* pBus): AbstractStorage(cacheLineLen, maxCacheLine, pBus) 
 {
-	if (maxUnits > this->units.max_size() || maxUnits < 1) {
-		this->maxUnits = this->units.max_size();
+	if (maxUnits > this->cacheLines.max_size() || maxUnits < 1) {
+		this->maxUnits = this->cacheLines.max_size();
 	}
 	else {
 		this->maxUnits = maxUnits;
@@ -12,57 +12,136 @@ Cache::Cache(size_t cacheLineLen, size_t maxCacheLine, Bus* pBus): AbstractStora
 
 bool Cache::ReceiveLocalInstruction(Instruction instruction)
 {
-	State currentState = GetCacheLineState(instruction.address);
+	size_t startAddress = GetStartAddress(instruction.address);
 
-	//TODO
+	State currentState = GetCacheLineState(startAddress);
 
-	pBus->Broadcast(this, instruction);
+	switch (currentState)
+	{
+	case State::Modified:
+		switch (instruction.operation)
+		{
+		case Operation::Read:
+			// Remain the same
+			break;
+		case Operation::Write:
+			// Remain the same
+			break;
+		}
+		break;
+	case State::Exclusive:
+		switch (instruction.operation)
+		{
+		case Operation::Read:
+			// Remain the same
+			break;
+		case Operation::Write:
+			// Make others invalid
+			pBus->BroadcastInvalid(this, startAddress);
+			// Change to Modified
+			cacheLines[startAddress] = State::Modified;
+			break;
+		}
+		break;
+	case State::Shared:
+		switch (instruction.operation)
+		{
+		case Operation::Read:
+			// Remain the same
+			break;
+		case Operation::Write:
+			// Make others invalid
+			pBus->BroadcastInvalid(this, startAddress);
+			// Write back to memory
+			pBus->WriteBackToMemory(startAddress);
+			// Change to Exclusive
+			cacheLines[startAddress] = State::Exclusive;
+			break;
+		}
+		break;
+	case State::Invalid:
+		switch (instruction.operation)
+		{
+		case Operation::Read:
+			// Ask for others
+			if (!pBus->AskForModifiedOrExclusiveData(this, startAddress)) {
+				// Others don't have, then load from memory
+				LoadFromMemory(startAddress);
+			}
+			// Change to Shared
+			cacheLines[startAddress] = State::Shared;
+			break;
+		case Operation::Write:
+			// Ask for others
+			if (!pBus->AskForModifiedOrExclusiveData(this, startAddress)) {
+				// Others don't have, then load from memory
+				LoadFromMemory(startAddress);
+			}
+			// Write back to memory
+			pBus->WriteBackToMemory(startAddress);
+			// Change to Exclusive
+			cacheLines[startAddress] = State::Exclusive;
+			break;
+		}
+		break;
+	}
+
 	return true;
 }
 
-bool Cache::ReceiveRemoteInstruction(Instruction instruction)
+bool Cache::SetInvalid(size_t startAddress)
 {
-	State currentState = GetCacheLineState(instruction.address);
+	if (cacheLines.find(startAddress) != cacheLines.end()) {
+		cacheLines[startAddress] = State::Invalid;
 
-	//TODO
-
+		return true;
+	}
 	return false;
 }
 
-State Cache::GetCacheLineState(size_t address)
+bool Cache::SendModifiedOrExclusiveData(size_t startAddress)
 {
-	size_t startAddress = GetStartAddress(address);
+	if (cacheLines.find(startAddress) != cacheLines.end()) {
+		if (cacheLines[startAddress] == State::Exclusive or cacheLines[startAddress] == State::Modified) {
+			cacheLines[startAddress] = State::Shared;
 
-	std::map<size_t, State>::iterator position = units.find(startAddress);
+			return true;
+		}
+	}
+	return false;
+}
 
-	if (position != units.end()) {
+State Cache::GetCacheLineState(size_t startAddress)
+{
+	std::map<size_t, State>::iterator position = cacheLines.find(startAddress);
+
+	if (position != cacheLines.end()) {
 		// Hit
 		return position->second;
 	}
 	else {
 		// Miss
-		return LoadFromMemory(startAddress);
+		return State::Invalid;
 	}
-	return State();
 }
 
-State Cache::LoadFromMemory(size_t startAddress)
+bool Cache::LoadFromMemory(size_t startAddress)
 {
-	if (units.size() >= maxUnits) {
+	if (cacheLines.size() >= maxUnits) {
 		// Swap out the first Cache line
-		size_t firstCacheLineAddress = units.begin()->first;
-		State firstCacheLineState = units.begin()->second;
+		size_t firstCacheLineAddress = cacheLines.begin()->first;
+		State firstCacheLineState = cacheLines.begin()->second;
 
 		if (firstCacheLineState == State::Modified) {
 			// Need to write back to memory only if swapped out cache line at modified mode
 			pBus->WriteBackToMemory(firstCacheLineAddress);
 		}
 
-		units.erase(units.begin());
+		cacheLines.erase(cacheLines.begin());
 	}
 
-	units[startAddress] = State::Shared;
-	return State::Shared;
+	cacheLines[startAddress] = State::Shared;
+	return true;
 }
 
 bool Cache::Link(Bus* pBus)

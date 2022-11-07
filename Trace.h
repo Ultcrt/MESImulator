@@ -7,5 +7,5 @@
 class TraceLoader
 {
 public:
-	std::vector<Instruction> Load(std::string path);
+	static std::vector<Instruction> Load(std::string path);
 };

@@ -2,10 +2,42 @@
 //
 
 #include <iostream>
+#include <vector>
+#include <algorithm>
+#include "Core.h"
+#include "Bus.h"
+#include "Cache.h"
+#include "Trace.h"
+#include "Instruction.h"
+
+using namespace std;
+
+#define CACHE_LINE_LEN 32
+#define MAX_CACHE_LINES 0
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    Bus bus;
+
+    Cache cacheA = Cache(CACHE_LINE_LEN, MAX_CACHE_LINES, &bus);
+    Cache cacheB = Cache(CACHE_LINE_LEN, MAX_CACHE_LINES, &bus);
+
+    Core coreA = Core(&cacheA);
+    Core coreB = Core(&cacheB);
+
+    vector<Instruction> instructionsA = TraceLoader::Load("./trace0.txt");
+    vector<Instruction> instructionsB = TraceLoader::Load("./trace1.txt");
+
+    size_t loop = max(instructionsA.size(), instructionsB.size());
+
+    for (int i = 0; i < loop; i++) {
+        if (i < instructionsA.size()) {
+            coreA.Execute(instructionsA[i]);
+        }
+        if (i < instructionsB.size()) {
+            coreB.Execute(instructionsB[i]);
+        }
+    }
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单

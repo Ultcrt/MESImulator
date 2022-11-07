@@ -13,7 +13,8 @@ public:
 	bool SetMemoryPtr(Memory* pMemory);
 	bool Link(Cache* pCache);
 	bool Link(Memory* pMemory);
-	size_t Broadcast(Cache* src, Instruction instruction);
+	size_t BroadcastInvalid(Cache* src, size_t startAddress);
+	Cache* AskForModifiedOrExclusiveData(Cache* src, size_t startAddress);
 	bool WriteBackToMemory(size_t startAddress);
 
 private:

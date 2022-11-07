@@ -28,19 +28,32 @@ bool Bus::Link(Memory* pMemory)
     return true;
 }
 
-size_t Bus::Broadcast(Cache* src, Instruction instruction)
+size_t Bus::BroadcastInvalid(Cache* src, size_t startAddress)
 {
     size_t successCount = 0;
 
     for (vector<Cache*>::iterator iter = pCaches.begin(); iter < pCaches.end(); iter++) {
         if (*iter != src) {
-            if ((*iter)->ReceiveRemoteInstruction(instruction)) {
+            if ((*iter)->SetInvalid(startAddress)) {
                 successCount++;
             }
         }
     }
 
     return successCount;
+}
+
+Cache* Bus::AskForModifiedOrExclusiveData(Cache* src, size_t startAddress)
+{
+    for (vector<Cache*>::iterator iter = pCaches.begin(); iter < pCaches.end(); iter++) {
+        if (*iter != src) {
+            if ((*iter)->SendModifiedOrExclusiveData(startAddress)) {
+                return *iter;
+            }
+        }
+    }
+
+    return NULL;
 }
 
 bool Bus::WriteBackToMemory(size_t startAddress)
