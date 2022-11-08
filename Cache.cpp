@@ -40,10 +40,10 @@ bool Cache::ReceiveLocalInstruction(Instruction instruction)
 			// Remain the same
 			break;
 		case Operation::Write:
-			// Make others invalid
-			pBus->BroadcastInvalid(this, startAddress);
 			// Change to Modified
 			cacheLines[startAddress] = State::Modified;
+			// Make others invalid
+			pBus->BroadcastInvalid(this, startAddress);
 			break;
 		}
 		break;
@@ -54,12 +54,12 @@ bool Cache::ReceiveLocalInstruction(Instruction instruction)
 			// Remain the same
 			break;
 		case Operation::Write:
-			// Make others invalid
-			pBus->BroadcastInvalid(this, startAddress);
 			// Write back to memory
 			pBus->WriteBackToMemory(startAddress);
 			// Change to Exclusive
 			cacheLines[startAddress] = State::Exclusive;
+			// Make others invalid
+			pBus->BroadcastInvalid(this, startAddress);
 			break;
 		}
 		break;
@@ -68,7 +68,7 @@ bool Cache::ReceiveLocalInstruction(Instruction instruction)
 		{
 		case Operation::Read:
 			// Ask for others
-			if (!pBus->AskForModifiedOrExclusiveData(this, startAddress)) {
+			if (!pBus->RequestModifiedOrExclusiveDataFromRemote(this, startAddress)) {
 				// Others don't have, then load from memory
 				LoadFromMemory(startAddress);
 			}
@@ -77,7 +77,7 @@ bool Cache::ReceiveLocalInstruction(Instruction instruction)
 			break;
 		case Operation::Write:
 			// Ask for others
-			if (!pBus->AskForModifiedOrExclusiveData(this, startAddress)) {
+			if (!pBus->RequestModifiedOrExclusiveDataFromRemote(this, startAddress)) {
 				// Others don't have, then load from memory
 				LoadFromMemory(startAddress);
 			}
@@ -85,6 +85,8 @@ bool Cache::ReceiveLocalInstruction(Instruction instruction)
 			pBus->WriteBackToMemory(startAddress);
 			// Change to Exclusive
 			cacheLines[startAddress] = State::Exclusive;
+			// Make others invalid
+			pBus->BroadcastInvalid(this, startAddress);
 			break;
 		}
 		break;
@@ -113,6 +115,7 @@ bool Cache::SendModifiedOrExclusiveData(size_t startAddress)
 	if (cacheLines.find(startAddress) != cacheLines.end()) {
 		if (cacheLines[startAddress] == State::Exclusive or cacheLines[startAddress] == State::Modified) {
 			State lastState = GetCacheLineState(startAddress);
+			// Change to Shared
 			cacheLines[startAddress] = State::Shared;
 
 			PrintCacheState(startAddress, lastState);

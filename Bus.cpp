@@ -43,7 +43,7 @@ size_t Bus::BroadcastInvalid(Cache* src, size_t startAddress)
     return successCount;
 }
 
-Cache* Bus::AskForModifiedOrExclusiveData(Cache* src, size_t startAddress)
+Cache* Bus::RequestModifiedOrExclusiveDataFromRemote(Cache* src, size_t startAddress)
 {
     for (vector<Cache*>::iterator iter = pCaches.begin(); iter < pCaches.end(); iter++) {
         if (*iter != src) {
