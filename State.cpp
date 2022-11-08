@@ -1,33 +1,18 @@
 #include "State.h"
 
-State GetNewStateAfterOperation(State currentState, Operation operation, bool fromRemote)
+std::string GetStateName(State state)
 {
-	switch (currentState)
+	switch (state)
 	{
 	case State::Modified:
-		switch (operation)
-		{
-		case Operation::Read:
-			if (fromRemote) {
-				return State::Shared;
-			}
-			else {
-
-			}
-			break;
-		case Operation::Write:
-			break;
-		default:
-			break;
-		}
-		break;
+		return "Modified";
 	case State::Exclusive:
-		break;
+		return "Exclusive";
 	case State::Shared:
-		break;
+		return "Shared";
 	case State::Invalid:
-		break;
+		return "Invalid";
 	default:
-		break;
+		return "Undefined";
 	}
 }

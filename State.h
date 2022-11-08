@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Operation.h"
+#include <string>
 
 enum class State
 {
@@ -10,4 +11,4 @@ enum class State
 	Invalid
 }; 
 
-State GetNewStateAfterOperation(State currentState, Operation, bool fromRemote);
+std::string GetStateName(State state);

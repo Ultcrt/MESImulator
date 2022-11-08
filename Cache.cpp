@@ -1,7 +1,10 @@
 #include "Cache.h"
 #include "Bus.h"
+#include <iostream>
 
-Cache::Cache(size_t cacheLineLen, size_t maxCacheLines): cacheLineLen(cacheLineLen), maxCacheLines(maxCacheLines)
+using namespace std;
+
+Cache::Cache(size_t cacheLineLen, size_t maxCacheLines, string name): AbstractStorage(name), cacheLineLen(cacheLineLen), maxCacheLines(maxCacheLines)
 {
 	if (maxCacheLines > this->cacheLines.max_size() || maxCacheLines < 1) {
 		this->maxCacheLines = this->cacheLines.max_size();
@@ -15,9 +18,9 @@ bool Cache::ReceiveLocalInstruction(Instruction instruction)
 {
 	size_t startAddress = GetStartAddress(instruction.address);
 
-	State currentState = GetCacheLineState(startAddress);
+	State lastState = GetCacheLineState(startAddress);
 
-	switch (currentState)
+	switch (lastState)
 	{
 	case State::Modified:
 		switch (instruction.operation)
@@ -87,14 +90,19 @@ bool Cache::ReceiveLocalInstruction(Instruction instruction)
 		break;
 	}
 
+	PrintCacheState(startAddress, lastState);
+
 	return true;
 }
 
 bool Cache::SetInvalid(size_t startAddress)
 {
 	if (cacheLines.find(startAddress) != cacheLines.end()) {
+		State lastState = GetCacheLineState(startAddress);
 		cacheLines[startAddress] = State::Invalid;
 
+		PrintCacheState(startAddress, lastState);
+		
 		return true;
 	}
 	return false;
@@ -104,7 +112,10 @@ bool Cache::SendModifiedOrExclusiveData(size_t startAddress)
 {
 	if (cacheLines.find(startAddress) != cacheLines.end()) {
 		if (cacheLines[startAddress] == State::Exclusive or cacheLines[startAddress] == State::Modified) {
+			State lastState = GetCacheLineState(startAddress);
 			cacheLines[startAddress] = State::Shared;
+
+			PrintCacheState(startAddress, lastState);
 
 			return true;
 		}
@@ -155,5 +166,15 @@ bool Cache::Link(Bus* pBus)
 size_t Cache::GetStartAddress(size_t address)
 {
 	return (address / cacheLineLen) * cacheLineLen;
+}
+
+void Cache::PrintCacheState(size_t startAddress, State lastState)
+{
+	if (cacheLines[startAddress] == lastState) {
+		cout << "\t" << "Cache[" << name << "]: Cache line starting at address '" << hex << startAddress << "' has remained at the same state '" << GetStateName(cacheLines[startAddress]) << "'" << endl;
+	}
+	else {
+		cout << "\t" << "Cache[" << name << "]: Cache line starting at address '" << hex << startAddress << "' has changed from '" << GetStateName(lastState) << "' to '" << GetStateName(cacheLines[startAddress]) << "'" << endl;
+	}
 }
 

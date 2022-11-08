@@ -13,15 +13,15 @@
 
 using namespace std;
 
-#define CACHE_LINE_LEN 32
+#define CACHE_LINE_LEN 64
 #define MAX_CACHE_LINES 0
 
 int main()
 {
     Bus bus;
 
-    Cache cacheA = Cache(CACHE_LINE_LEN, MAX_CACHE_LINES);
-    Cache cacheB = Cache(CACHE_LINE_LEN, MAX_CACHE_LINES);
+    Cache cacheA = Cache(CACHE_LINE_LEN, MAX_CACHE_LINES, "A");
+    Cache cacheB = Cache(CACHE_LINE_LEN, MAX_CACHE_LINES, "B");
 
     Core coreA = Core(&cacheA);
     Core coreB = Core(&cacheB);

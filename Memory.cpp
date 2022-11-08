@@ -8,12 +8,12 @@ bool Memory::Update(size_t startAddress)
 {
     if (startAddress < maxMemorySize) {
         // Ignore memory update detail
-        cout << "Memory: Address '" << hex << startAddress << "' has been update" << endl;
+        cout << "\t" << "Memory: Data starting at address '" << hex << startAddress << "' has been update" << endl;
         return true;
     }
     else {
         // Ignore memory update detail
-        cout << "Memory: Address '" << hex << startAddress << "' is overflowed!" << endl;
+        cout << "\t" << "Memory: Address '" << hex << startAddress << "' is overflowed!" << endl;
         return false;
     }
 }
@@ -25,4 +25,4 @@ bool Memory::Link(Bus* pBus)
     return true;
 }
 
-Memory::Memory(size_t maxMemorySize): maxMemorySize(maxMemorySize) {}
+Memory::Memory(size_t maxMemorySize, string name) : AbstractStorage(name), maxMemorySize(maxMemorySize) {}

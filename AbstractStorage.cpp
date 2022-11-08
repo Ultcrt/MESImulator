@@ -1,6 +1,8 @@
 #include "AbstractStorage.h"
 
-AbstractStorage::AbstractStorage() {}
+using namespace std;
+
+AbstractStorage::AbstractStorage(string name): pBus(nullptr), name(name) {}
 
 bool AbstractStorage::SetBusPtr(Bus* pBus)
 {
