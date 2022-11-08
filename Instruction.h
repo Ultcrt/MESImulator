@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Operation.h"
+#include <string>
 
 struct Instruction
 {

@@ -39,6 +39,12 @@
     <ClCompile Include="Operation.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="AbstractStorage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Trace.h">
@@ -62,5 +68,19 @@
     <ClInclude Include="Operation.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="AbstractStorage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="trace0.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="trace1.txt">
+      <Filter>资源文件</Filter>
+    </Text>
   </ItemGroup>
 </Project>

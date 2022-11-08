@@ -135,7 +135,6 @@
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="MESImulator.cpp" />
     <ClCompile Include="Operation.cpp" />
-    <ClCompile Include="Signal.cpp" />
     <ClCompile Include="State.cpp" />
     <ClCompile Include="Trace.cpp" />
   </ItemGroup>
@@ -147,9 +146,12 @@
     <ClInclude Include="Instruction.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="Operation.h" />
-    <ClInclude Include="Signal.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="Trace.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="trace0.txt" />
+    <Text Include="trace1.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,13 +1,21 @@
 #include "Memory.h"
 #include <iostream>
+#include "Bus.h"
 
 using namespace std;
 
 bool Memory::Update(size_t startAddress)
 {
-    // Ignore memory update detail
-    cout << "Memory: Address '" << hex << startAddress << "' has been update" << endl;
-    return true;
+    if (startAddress < maxMemorySize) {
+        // Ignore memory update detail
+        cout << "Memory: Address '" << hex << startAddress << "' has been update" << endl;
+        return true;
+    }
+    else {
+        // Ignore memory update detail
+        cout << "Memory: Address '" << hex << startAddress << "' is overflowed!" << endl;
+        return false;
+    }
 }
 
 bool Memory::Link(Bus* pBus)
@@ -16,3 +24,5 @@ bool Memory::Link(Bus* pBus)
     pBus->SetMemoryPtr(this);
     return true;
 }
+
+Memory::Memory(size_t maxMemorySize): maxMemorySize(maxMemorySize) {}

@@ -3,7 +3,6 @@
 #include "Cache.h"
 #include "Instruction.h"
 #include "Memory.h"
-#include <string>
 #include <vector>
 
 class Bus

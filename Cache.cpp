@@ -1,12 +1,13 @@
 #include "Cache.h"
+#include "Bus.h"
 
-Cache::Cache(size_t cacheLineLen, size_t maxCacheLine, Bus* pBus): AbstractStorage(cacheLineLen, maxCacheLine, pBus) 
+Cache::Cache(size_t cacheLineLen, size_t maxCacheLines): cacheLineLen(cacheLineLen), maxCacheLines(maxCacheLines)
 {
-	if (maxUnits > this->cacheLines.max_size() || maxUnits < 1) {
-		this->maxUnits = this->cacheLines.max_size();
+	if (maxCacheLines > this->cacheLines.max_size() || maxCacheLines < 1) {
+		this->maxCacheLines = this->cacheLines.max_size();
 	}
 	else {
-		this->maxUnits = maxUnits;
+		this->maxCacheLines = maxCacheLines;
 	}
 }
 
@@ -127,7 +128,7 @@ State Cache::GetCacheLineState(size_t startAddress)
 
 bool Cache::LoadFromMemory(size_t startAddress)
 {
-	if (cacheLines.size() >= maxUnits) {
+	if (cacheLines.size() >= maxCacheLines) {
 		// Swap out the first Cache line
 		size_t firstCacheLineAddress = cacheLines.begin()->first;
 		State firstCacheLineState = cacheLines.begin()->second;
@@ -150,3 +151,9 @@ bool Cache::Link(Bus* pBus)
 	pBus->PushBackCachePtr(this);
 	return false;
 }
+
+size_t Cache::GetStartAddress(size_t address)
+{
+	return (address / cacheLineLen) * cacheLineLen;
+}
+

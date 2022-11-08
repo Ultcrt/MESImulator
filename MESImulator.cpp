@@ -8,6 +8,7 @@
 #include "Bus.h"
 #include "Cache.h"
 #include "Trace.h"
+#include "Memory.h"
 #include "Instruction.h"
 
 using namespace std;
@@ -19,11 +20,17 @@ int main()
 {
     Bus bus;
 
-    Cache cacheA = Cache(CACHE_LINE_LEN, MAX_CACHE_LINES, &bus);
-    Cache cacheB = Cache(CACHE_LINE_LEN, MAX_CACHE_LINES, &bus);
+    Cache cacheA = Cache(CACHE_LINE_LEN, MAX_CACHE_LINES);
+    Cache cacheB = Cache(CACHE_LINE_LEN, MAX_CACHE_LINES);
 
     Core coreA = Core(&cacheA);
     Core coreB = Core(&cacheB);
+
+    Memory memory = Memory(SIZE_MAX);
+
+    bus.Link(&cacheA);
+    bus.Link(&cacheB);
+    bus.Link(&memory);
 
     vector<Instruction> instructionsA = TraceLoader::Load("./trace0.txt");
     vector<Instruction> instructionsB = TraceLoader::Load("./trace1.txt");
@@ -38,6 +45,8 @@ int main()
             coreB.Execute(instructionsB[i]);
         }
     }
+
+    return 0;
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
