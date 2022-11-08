@@ -24,5 +24,6 @@ private:
 	size_t maxCacheLines;
 	size_t GetStartAddress(size_t address);
 	void PrintCacheState(size_t startAddress, State lastState);
+	bool SwapOutWhenNeeded(size_t startAddress);
 };
 

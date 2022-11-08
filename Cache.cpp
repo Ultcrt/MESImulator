@@ -64,9 +64,12 @@ bool Cache::ReceiveLocalInstruction(Instruction instruction)
 		}
 		break;
 	case State::Invalid:
+		// Invalid has two possible situations: 1. startAddress not in cache; 2. set invalid by remote;
 		switch (instruction.operation)
 		{
 		case Operation::Read:
+			// Swap out other cache line when needed (currently when cache is full and startAddress is not in cache)
+			SwapOutWhenNeeded(startAddress);
 			// Ask for others
 			if (!pBus->RequestModifiedOrExclusiveDataFromRemote(this, startAddress)) {
 				// Others don't have, then load from memory
@@ -76,6 +79,8 @@ bool Cache::ReceiveLocalInstruction(Instruction instruction)
 			cacheLines[startAddress] = State::Shared;
 			break;
 		case Operation::Write:
+			// Swap out other cache line when needed (currently when cache is full and startAddress is not in cache)
+			SwapOutWhenNeeded(startAddress);
 			// Ask for others
 			if (!pBus->RequestModifiedOrExclusiveDataFromRemote(this, startAddress)) {
 				// Others don't have, then load from memory
@@ -140,22 +145,31 @@ State Cache::GetCacheLineState(size_t startAddress)
 	}
 }
 
+bool Cache::SwapOutWhenNeeded(size_t startAddress) {
+	if (cacheLines.find(startAddress) != cacheLines.end()) {
+		// startAddress does not exist in cache, need to check cache is full or not
+		if (cacheLines.size() >= maxCacheLines) {
+			// Swap out the first Cache line
+			size_t firstCacheLineAddress = cacheLines.begin()->first;
+			State firstCacheLineState = cacheLines.begin()->second;
+
+			if (firstCacheLineState == State::Modified) {
+				// Need to write back to memory only if swapped out cache line at modified mode
+				pBus->WriteBackToMemory(firstCacheLineAddress);
+			}
+
+			cacheLines.erase(cacheLines.begin());
+
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Cache::LoadFromMemory(size_t startAddress)
 {
-	if (cacheLines.size() >= maxCacheLines) {
-		// Swap out the first Cache line
-		size_t firstCacheLineAddress = cacheLines.begin()->first;
-		State firstCacheLineState = cacheLines.begin()->second;
-
-		if (firstCacheLineState == State::Modified) {
-			// Need to write back to memory only if swapped out cache line at modified mode
-			pBus->WriteBackToMemory(firstCacheLineAddress);
-		}
-
-		cacheLines.erase(cacheLines.begin());
-	}
-
 	cacheLines[startAddress] = State::Shared;
+	cout << "\t" << "Cache[" << name << "]: Cache line starting at address '" << hex << startAddress << "' has been loaded from memory" << endl;
 	return true;
 }
 
